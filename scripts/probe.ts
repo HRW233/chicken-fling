@@ -34,8 +34,6 @@ function mulberry(seed: number): () => number {
 interface Shot {
   angle: number;
   power: number;
-  /** Arc clearance to the target; lower is a better aim. */
-  score: number;
 }
 
 /**
@@ -82,7 +80,7 @@ function candidatesFor(rt: LevelRuntime, tx: number, ty: number): Shot[] {
   const minA = cfg.minAngleDeg * DEG;
   const maxA = cfg.maxAngleDeg * DEG;
   const live = rt.blocks.filter((b) => !b.destroyed && !b.def.isGround);
-  const out: Shot[] = [];
+  const out: { shot: Shot; clearance: number }[] = [];
   for (let a = minA; a <= maxA + 1e-4; a += 1 * DEG) {
     for (let p = 0.45; p <= 1.0001; p += 0.05) {
       const sx = cfg.x + Math.cos(a) * 66;
@@ -105,12 +103,14 @@ function candidatesFor(rt: LevelRuntime, tx: number, ty: number): Shot[] {
         if (d < free) free = d;
         if (!blocked && d < clear) clear = d;
       }
-      const score = Number.isFinite(clear) ? clear : free + 500;
-      out.push({ angle: a, power: p, score });
+      // Lower clearance is a better aim; an arc that never gets near the
+      // target falls back to its closest approach plus a penalty.
+      const clearance = Number.isFinite(clear) ? clear : free + 500;
+      out.push({ shot: { angle: a, power: p }, clearance });
     }
   }
-  out.sort((l, r) => l.score - r.score);
-  return out.slice(0, 30);
+  out.sort((l, r) => l.clearance - r.clearance);
+  return out.slice(0, 30).map((c) => c.shot);
 }
 
 function pickShot(list: Shot[], rng: () => number, precise: boolean): Shot | null {
@@ -124,7 +124,6 @@ function pickShot(list: Shot[], rng: () => number, precise: boolean): Shot | nul
   return {
     angle: base.angle + (rng() - 0.5) * jitter * DEG,
     power: Math.min(1, Math.max(0.3, base.power + (rng() - 0.5) * (precise ? 0.01 : 0.06))),
-    score: base.score,
   };
 }
 
