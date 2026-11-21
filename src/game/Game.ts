@@ -594,7 +594,10 @@ export class Game {
   private continueLevel(): string {
     const lastId = this.saveStore.data.lastPlayed;
     const last = lastId ? findLevel(lastId) : undefined;
-    if (last && isLevelUnlocked(last, this.saveStore.data)) return last.id;
+    // Re-open the last level only if it is still unfinished; otherwise continue
+    // means "carry on with the campaign", not "replay what I just cleared".
+    const lastStars = last ? (this.saveStore.data.levels[last.id]?.stars ?? 0) : 0;
+    if (last && lastStars === 0 && isLevelUnlocked(last, this.saveStore.data)) return last.id;
     for (const level of ALL_LEVELS) {
       if (isLevelUnlocked(level, this.saveStore.data) && (this.saveStore.data.levels[level.id]?.stars ?? 0) === 0) {
         return level.id;
