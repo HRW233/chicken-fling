@@ -76,10 +76,14 @@ const S: LevelSpec[] = [
   {
     name: 'The Press',
     t: 'gate',
-    q: ['nugget', 'drumstick', 'cluck', 'puff'],
+    // The brute on the lintel takes two solid hits, so the coop carries a
+    // second dash bird instead of the no-ability Cluck.
+    q: ['nugget', 'drumstick', 'drumstick', 'cluck'],
     mat: 'metal',
     en: 2,
-    mech: [{ kind: 'piston', x: 690, y: 420, axis: 'y', travel: 150, periodS: 3.4 }],
+    // The press hovers just above the lintel: at its old depth the head was
+    // buried in the roof and simply knocked the weasel off for a free kill.
+    mech: [{ kind: 'piston', x: 690, y: 300, axis: 'y', travel: 90, periodS: 3.4 }],
   },
   { name: 'Scaffolding', t: 'tower', q: ['nugget', 'drumstick', 'puff', 'cluck'], mat: 'metal', en: 3, tier: 2 },
   {

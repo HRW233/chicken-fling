@@ -1,5 +1,6 @@
 import { CHICKEN_ORDER } from '../chickens';
 import type { ChickenId } from '../types';
+import { weaselDef } from './builder';
 import { ALL_LEVELS } from './index';
 
 export interface ValidationReport {
@@ -38,6 +39,20 @@ export function validateLevels(): ValidationReport {
     for (const weasel of level.weasels) {
       if (weasel.x < 0 || weasel.x > 1280 || weasel.y < -600 || weasel.y > 900) {
         problems.push(`${level.id}: weasel ${weasel.id} out of bounds`);
+      }
+      // A weasel spawned inside a block can never be hit (the block shields it)
+      // and jitters itself apart, so treat that as a layout bug.
+      const wr = weaselDef(weasel.type).radius;
+      for (const block of level.blocks) {
+        if (block.shape === 'circle') continue;
+        if (Math.abs(block.angle ?? 0) > 1) continue;
+        const hx = (block.w ?? 0) / 2;
+        const hy = (block.h ?? 0) / 2;
+        const nx = Math.max(block.x - hx, Math.min(weasel.x, block.x + hx));
+        const ny = Math.max(block.y - hy, Math.min(weasel.y, block.y + hy));
+        if (Math.hypot(weasel.x - nx, weasel.y - ny) < wr - 3) {
+          problems.push(`${level.id}: ${weasel.type} ${weasel.id} spawns inside ${block.material} ${block.id}`);
+        }
       }
     }
     for (const id of level.queue) {

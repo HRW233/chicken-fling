@@ -64,11 +64,12 @@ const wall: Template = (a) => {
     b.box(x, gy - h - 26 - 76, span + 40, 24, mat);
   }
   place(a, [
-    [x, gy - h - 26 - (tier >= 2 ? 76 : 0)],
-    [x + span / 2 + 52, gy],
-    [x - span / 2 - 48, gy],
+    // The tier-2 crown beam is 24 thick, so its top is 12 below the old spot.
+    [x, gy - h - 26 - (tier >= 2 ? 88 : 0)],
+    [x + span / 2 + 62, gy],
+    [x - span / 2 - 58, gy],
     [x, gy],
-    [x + span / 2 + 118, gy],
+    [x + span / 2 + 128, gy],
   ]);
 };
 
@@ -124,12 +125,15 @@ const gate: Template = (a) => {
   b.box(x + half, gy - h / 2, 36, h, mat);
   const lintelMat: Material = mat === 'hay' || mat === 'ice' ? 'wood' : 'stone';
   b.box(x, gy - h - 22, half * 2 + 76, 44, lintelMat);
+  // Roof weasel stands on the lintel's near lip: centre stage is where gate
+  // levels park a press piston, and a weasel mid-roof only shows its top half
+  // to incoming shots, which made it almost impossible to hit.
   place(a, [
-    [x, gy - h - 44],
-    [x - half - 40, gy],
-    [x + half + 42, gy],
-    [x - half - 108, gy],
-    [x + half + 110, gy],
+    [x - 108, gy - h - 44],
+    [x - half - 54, gy],
+    [x + half + 56, gy],
+    [x - half - 122, gy],
+    [x + half + 124, gy],
   ]);
 };
 
@@ -178,12 +182,13 @@ const bunker: Template = (a) => {
   b.box(x + half, gy - h / 2, 34, h, mat);
   b.box(x, gy - h - 16, half * 2 + 68, 32, mat);
   b.box(x - 34, gy - 30, 52, 60, 'wood');
+  // Clear a brute's 30 px radius from the columns, not just a grunt's.
   place(a, [
     [x, gy - h - 32],
-    [x - half - 40, gy],
-    [x + half + 42, gy],
-    [x - half - 106, gy],
-    [x + half + 108, gy],
+    [x - half - 54, gy],
+    [x + half + 56, gy],
+    [x - half - 120, gy],
+    [x + half + 122, gy],
   ]);
 };
 
@@ -233,16 +238,20 @@ const factory: Template = (a) => {
   b.box(x, gy - h - 14, 250, 26, 'metal');
   b.box(x - 60, gy - 26, 44, 52, mat);
   b.box(x + 58, gy - 26, 44, 52, 'wood');
-  b.box(x, gy - h - 42, 120, 22, 'metal');
+  // Rooftop machine sits on the far side of the roof (away from the cannon) so
+  // it neither buries the roof weasel nor shields it from incoming shots.
+  b.box(x + 72, gy - h - 42, 80, 22, 'metal');
   b.mech({ kind: 'conveyor', x, y: gy - 76, w: 186, speed: 110 });
   // Tall factory columns shadow whatever stands right behind them, so ground
   // spots sit outside the column line and the roofline.
   place(a, [
     [x, gy - h - 27],
     [x - 158, gy],
-    [x + 226, gy],
+    // Far-side ground spots sit well clear of the right column's shadow, or a
+    // tall column shields the weasel from every approach.
+    [x + 290, gy],
     [x - 224, gy],
-    [x + 160, gy],
+    [x + 356, gy],
   ]);
 };
 
@@ -256,9 +265,10 @@ const bridge: Template = (a) => {
   for (let i = -2; i <= 2; i++) {
     b.box(x + i * 56, plankY, 54, 16, mat);
   }
-  b.box(x, plankY - 10, 18, 20, mat);
+  // Deck top is plankY - 8. The old keystone post sat on that spot, so a
+  // weasel there spawned half inside the planks.
   place(a, [
-    [x, plankY + 8],
+    [x, plankY - 8],
     [x - span - 56, gy],
     [x - span, gy - towerH],
     [x + span, gy - towerH],
@@ -273,35 +283,43 @@ const island: Template = (a) => {
   b.box(x - 72, top - 44, 22, 88, mat);
   b.box(x + 72, top - 44, 22, 88, mat);
   b.box(x, top - 100, 178, 24, mat);
-  b.box(x - 48, top - 148, 22, 72, mat);
-  b.box(x + 48, top - 148, 22, 72, mat);
-  if (tier >= 3) b.box(x, top - 196, 130, 26, mat);
+  // A single off-centre beacon: a pair of upper pillars used to leave the roof
+  // weasel in a 72 px slot, and nothing could drop in far enough to hit it.
+  if (tier >= 2) b.box(x + 62, top - 128, 46, 32, mat);
+  // Bales dress the ledge but are not spawning spots: a weasel on a bale sat
+  // right behind the platform lip, so shots clipped the shelf before reaching it.
+  b.box(x - 160, top - 14, 46, 28, 'wood');
+  b.box(x + 160, top - 14, 46, 28, 'wood');
   b.mech({ kind: 'windZone', x, y: top - 120, w: 320, h: 260, wind: { x: 140, y: 0 } });
+  // Roof weasel in open air; the rest stand on the ground clear of the
+  // platform overhang, which would otherwise shield them.
   place(a, [
-    [x, top],
     [x, top - 112],
-    [x, top - 208],
-    [x - 150, gy],
-    [x + 150, gy],
+    [x - 225, gy],
+    [x + 230, gy],
+    [x - 300, gy],
+    [x + 310, gy],
   ]);
 };
 
 const balloons: Template = (a) => {
   const { b, x, gy, mat } = a;
   const deckY = gy - 214;
-  const deck =   b.box(x, deckY, 226, 24, 'wood', { static: true });
-  // Deck top sits at deckY - 12; load exactly on it so nothing spawns buried.
-  b.box(x - 62, deckY - 42, 58, 60, mat);
-  b.box(x + 62, deckY - 42, 58, 60, mat);
-  b.box(x, deckY - 83, 150, 22, mat);
-  b.mech({ kind: 'balloon', x: x - 104, y: deckY - 74, blockId: deck.id, lift: 1 });
-  b.mech({ kind: 'balloon', x: x + 104, y: deckY - 74, blockId: deck.id, lift: 1 });
+  const deck = b.box(x, deckY, 360, 24, 'wood', { static: true });
+  // Deck top sits at deckY - 12. Crates sit inboard so the deck's outer lips are
+  // wide enough to stand a weasel on — the pocket between the crates is walled
+  // off by them and roofed by the beam, so nothing can shoot into it.
+  b.box(x - 78, deckY - 42, 58, 60, mat);
+  b.box(x + 78, deckY - 42, 58, 60, mat);
+  b.box(x, deckY - 83, 170, 22, mat);
+  b.mech({ kind: 'balloon', x: x - 124, y: deckY - 74, blockId: deck.id, lift: 1 });
+  b.mech({ kind: 'balloon', x: x + 124, y: deckY - 74, blockId: deck.id, lift: 1 });
   place(a, [
-    [x, deckY - 12],
-    [x, deckY - 96],
-    [x - 150, gy],
-    [x + 150, gy],
-    [x + 190, deckY - 12],
+    [x, deckY - 94],
+    [x - 142, deckY - 12],
+    [x + 142, deckY - 12],
+    [x - 190, gy],
+    [x + 190, gy],
   ]);
 };
 
@@ -322,17 +340,19 @@ const dominos: Template = (a) => {
 const corridor: Template = (a) => {
   const { b, x, gy, mat, tier } = a;
   const h = 170 + tier * 24;
-  b.box(x - 110, gy - h / 2, 38, h, mat);
-  b.box(x + 110, gy - h / 2, 38, h, mat);
-  b.box(x - 110, gy - h - 14, 70, 28, mat);
-  b.box(x + 110, gy - h - 14, 70, 28, mat);
+  b.box(x - 130, gy - h / 2, 38, h, mat);
+  b.box(x + 130, gy - h / 2, 38, h, mat);
+  b.box(x - 130, gy - h - 14, 70, 28, mat);
+  b.box(x + 130, gy - h - 14, 70, 28, mat);
   b.box(x, gy - 26, 84, 52, 'wood');
+  // Stand on the crate or beside it on the floor — not in mid-air over the
+  // crate, which used to drop weasels into each other at spawn.
   place(a, [
-    [x, gy - h - 28],
-    [x, gy],
-    [x + 156, gy],
-    [x - 156, gy],
-    [x + 156, gy - h],
+    [x, gy - 52],
+    [x - 78, gy],
+    [x + 78, gy],
+    [x - 200, gy],
+    [x + 200, gy],
   ]);
 };
 
@@ -382,13 +402,15 @@ const gauntlet: Template = (a) => {
   b.box(g3 - 66, gy - 64, 28, 128, mat);
   b.box(g3 + 66, gy - 64, 28, 128, mat);
   b.box(g3, gy - 142, 174, 24, mat);
-  if (tier >= 2) b.box(g3, gy - 166, 60, 24, mat);
+  if (tier >= 2) b.box(g3 - 66, gy - 166, 60, 24, mat);
   const types: WeaselType[] = et.length ? et : ['grunt'];
   b.weasel(g1, gy - 106, types[0]);
   b.weasel(x, gy - 150, types[1 % types.length]);
-  b.weasel(g3, gy - 142, types[2 % types.length]);
+  b.weasel(g3, gy - 154, types[2 % types.length]);
   b.weasel(g3, gy, types[3 % types.length]);
-  if (a.en >= 5) b.weasel(x, gy, types[0]);
+  // Fifth body stands in the gap between the hay shed and the middle tower;
+  // the old spot was inside the tower's base slabs.
+  if (a.en >= 5) b.weasel(g1 - 120, gy, types[0]);
   if (a.en >= 6) b.weasel(g3 + 120, gy, types[1 % types.length]);
 };
 

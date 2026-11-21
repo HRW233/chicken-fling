@@ -17,7 +17,15 @@ Choices made where the brief was silent or left room for interpretation.
 - **Structure stability.** Twenty position iterations, twelve velocity iterations and engine sleeping keep tall stacks from squashing and leaning on their own; hay/wood/ice crush thresholds are far above a normal beam load so lintels no longer crush their own pillars. Towers get wider legs and at most four storeys.
 - **Force-based mechanisms divide by 7200** because matter.js applies forces per 1/60 s base delta; using 3600 made wind and magnets exactly twice as strong as intended at 120 Hz.
 - **Metal is a wall, not a target.** Multi-target forts whose primary material is metal are rebuilt from wood (worlds 1–4) or crystal (world 5), while factory columns, machinery, braces and single-target "teaching" forts stay metal. An all-metal 30 HP fort with three weasels inside was technically solvable but miserable; this keeps the "metal bounces shots" idea without turning levels into chores.
-- **Exposed enemy spots.** Template weasel positions sit on roofs, ledges and open ground, never sealed inside a box. Tall factory columns and tower shafts shadow the ground behind them, so ground spots were moved outside the column/roofline; otherwise the last weasel could be unreachable from every angle.
+- **Exposed enemy spots, checked by tooling.** Template weasel positions must sit in open air: a weasel spawned inside a block can never be hit and jitters itself apart. `validateLevels()` now tests every spawn circle against every block AABB and reported 44 bad spawns, which were fixed at the template level:
+  - island: the arch under the roof is sealed by its pillars, so weasels stand on the open roof and on the ground outside the platform overhang (the ledge bales are decoration). The upper pillar pair also made a 72 px slot that no shot could drop into — it is now a single off-centre roof beacon.
+  - balloons: the crates and roof beam sealed the deck pocket, so the deck is wider and weasels stand on its outer lips or on the cargo beam.
+  - gate: the lintel weasel sits on the near lip instead of mid-roof (mid-roof showed only its top half to incoming shots, and gate levels park a press piston at centre).
+  - factory: the rooftop machine housing moved to the far side of the roof, where it neither buries the roof weasel nor shields it from the cannon side.
+  - wall/bridge/bunker/gauntlet: roof spots sat half a block too low, and ground spots sat inside a brute's radius of the columns. Both were corrected; the bridge's centre keystone post (which spawned a weasel half inside the planks) was removed.
+  - Press piston in `w2-22`: its head was buried in the stone lintel and knocked the roof weasel off for a free kill; it now hovers just above the roof as a hazard.
+  - Ground spots beside tall columns were pushed out of the column's shadow, or the last weasel was unhittable from every approach.
+- **Blast damage.** Egg bombs now detonate on contact with a weasel instead of bouncing away and burning their fuse somewhere harmless, and blast damage is `18 + 22 × falloff` (was `26 × falloff`). A direct egg bomb therefore always kills a grunt or helmet, a brute near the centre, while a king or boss needs several. `scripts/blasttest.ts` prints the numbers per type and distance.
 
 ## Aiming and preview
 
@@ -34,3 +42,4 @@ Choices made where the brief was silent or left room for interpretation.
 
 - **Canvas-only UI.** Menus, buttons, level select and HUD are drawn on the same canvas as the game with a small widget layer, so there is no DOM/CSS UI to drift out of sync and no external fonts.
 - **Everything procedural.** Textures, chickens, weasels, backgrounds and sound are generated at runtime (canvas paths + WebAudio oscillators/noise). Nothing is fetched; the build has no asset pipeline.
+- **Resolution.** The canvas renders at the screen's full device pixel ratio (capped at 3) with high-quality image smoothing, and material swatches are painted into 144 px tiles (up from 72) so blocks stay crisp when zoomed or on high-DPI screens. Chickens and weasels are vector art drawn in body-radius units, so they scale without pixelation; they use gradients, layered feathers/fur, hatched wings and detailed gear rather than flat fills.

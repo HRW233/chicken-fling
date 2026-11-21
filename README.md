@@ -79,7 +79,11 @@ src/
   audio/Audio.ts           WebAudio synthesis (no files)
   save/Save.ts             versioned localStorage save + star rules
   ui/                      HUD, screens, level select, options, canvas widgets
-scripts/simulate.ts        headless solvability harness (AI plays every level)
+scripts/simulate.ts        randomised solvability harness (AI plays every level)
+scripts/solve.ts           greedy solver: aims like a player reading the arc, one-ply search
+scripts/probe.ts           dense per-level probe + per-weasel reachability report
+scripts/autocheck.ts       regression: no level may win itself in five idle seconds
+scripts/blasttest.ts       prints egg-bomb damage per weasel type and distance
 DECISIONS.md               design decisions the brief left open
 ```
 
@@ -87,22 +91,27 @@ DECISIONS.md               design decisions the brief left open
 
 Levels are authored as compact specs (template, tier, enemy count/types, material, mechanisms, seed) in `src/data/levels/world*.ts` and expanded into physics layouts by `templates.ts` + `build.ts`. `validateLevels()` runs in dev and in the harness and checks unique ids, queue size, golden eggs, boss count and template sanity.
 
+`validateLevels()` also rejects a weasel spawned inside a block: those were unhittable (the block shielded them) and jittered themselves apart, and the check caught 44 such spawns across the campaign.
+
 ```bash
-npx --yes tsx scripts/simulate.ts            # all levels, default attempts
-npx --yes tsx scripts/simulate.ts w2 24      # one world, 24 attempts per level
-npx --yes tsx scripts/simulate.ts all 24
-npx --yes tsx scripts/autocheck.ts   # regression: no level may win without a shot
+npx --yes tsx scripts/solve.ts w2-22          # greedy solver for one / several levels
+npx --yes tsx scripts/solve.ts                # whole campaign (~2 min)
+npx --yes tsx scripts/simulate.ts all 24      # randomised AI, 24 attempts per level
+npx --yes tsx scripts/probe.ts w4-07 20       # reachability + dense probe for levels
+npx --yes tsx scripts/autocheck.ts            # regression: no level may win without a shot
+npx --yes tsx scripts/blasttest.ts            # blast damage per weasel type
 ```
 
-The harness plays each level with a headless AI that uses the same trajectory model as the preview plus block occlusion, and reports clears, near misses and chicken coverage.
+`simulate.ts` fires a randomised AI with a coarse 2° / five-power grid. `solve.ts` is the fairer test: it scores a shortlist of aims by actually playing them out (replaying earlier shots, since physics is deterministic), hill-climbs around the best one, and keeps the winner — the way a player nudges the mouse against the arc preview.
 
-Current status: **145/145 levels validate, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The randomised AI clears 134/145 with 48 attempts each; the stragglers are chiefly levels where the AI's coarse 2° grid and five fixed powers never line up a first hit, not levels a player cannot solve. Every world including all five bosses is cleared by the harness.
+Current status: **145/145 levels validate with zero problems, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The greedy solver clears **140/145**; the five it misses (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-28`) are large gauntlet/boss fights where it ends with exactly one weasel left after emptying the coop — an ammo/aim limit of the solver, not sealed geometry (a per-weasel sweep finds killable shots for each of them). Every world including all five bosses is cleared.
 
 ## QA summary
 
 The §18 checklist is reported in full in the hand-over message. Highlights:
 
-- `npm run build` passes (strict TypeScript, Vite production build ~223 kB / 70 kB gzip).
+- `npm run build` passes (strict TypeScript, Vite production build ~230 kB / 72 kB gzip).
+- Rendering runs at the screen's full pixel density (DPR capped at 3) with 144 px material texture tiles and gradient-shaded vector chickens and weasels.
 - 145 levels, unique ids, all referenced by world/level select; every level's queue is at least `weasels + 2` so a spare chicken always exists.
 - All 9 chickens appear in ≥ 21 levels.
 - 5 golden eggs, 5 bosses, per-world star totals and best scores persist and never regress.

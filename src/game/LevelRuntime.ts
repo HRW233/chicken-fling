@@ -59,6 +59,9 @@ const IMPULSE_SCALE = 0.3;
 const WEASEL_DAMAGE_SCALE = 0.03;
 /** Closing speed (px/s) below which a bump doesn't hurt a weasel. */
 const WEASEL_MIN_SPEED = 150;
+/** Blast damage at the centre and the extra falloff-scaled damage on top. */
+const BLAST_DAMAGE_BASE = 18;
+const BLAST_DAMAGE_SCALE = 22;
 /** matter.js 0.20 normalises velocities to a 60 Hz base delta. */
 const PX_PER_STEP = 60;
 
@@ -593,7 +596,7 @@ export class LevelRuntime {
         x: w.body.velocity.x + nx * dv * falloff * 0.8,
         y: w.body.velocity.y + ny * dv * falloff * 0.8,
       });
-      this.damageWeasel(w, 26 * falloff);
+      this.damageWeasel(w, BLAST_DAMAGE_BASE + BLAST_DAMAGE_SCALE * falloff);
     }
   }
 
@@ -951,6 +954,16 @@ export class LevelRuntime {
       return;
     }
     if (eggB?.mega) {
+      this.detonateEgg(eggB);
+      return;
+    }
+    // A direct hit on a weasel arms the egg on contact instead of letting it
+    // bounce away and burn its fuse somewhere harmless.
+    if (eggA && refB?.kind === 'weasel') {
+      this.detonateEgg(eggA);
+      return;
+    }
+    if (eggB && refA?.kind === 'weasel') {
       this.detonateEgg(eggB);
       return;
     }

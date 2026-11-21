@@ -33,6 +33,8 @@ export class Renderer {
   ) {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is unavailable');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     this.ctx = ctx;
     this.particles = particles ?? new Particles();
     this.resize();
@@ -42,7 +44,9 @@ export class Renderer {
     const rect = this.canvas.getBoundingClientRect();
     const cssW = Math.max(1, rect.width || window.innerWidth);
     const cssH = Math.max(1, rect.height || window.innerHeight);
-    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    // Render at the screen's full pixel density (up to 3x) so sprites and
+    // material textures stay crisp on phones and high-DPI laptops.
+    const dpr = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
     this.dpr = dpr;
     this.canvas.width = Math.floor(cssW * dpr);
     this.canvas.height = Math.floor(cssH * dpr);

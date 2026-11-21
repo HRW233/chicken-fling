@@ -75,7 +75,9 @@ export const MATERIALS: Record<Material, MaterialDef> = {
     friction: 0.6,
     density: 0.003,
     threshold: 260,
-    crush: 38,
+    // A 272 px stone lintel already carries ~36 mass on its own columns; a
+    // weasel standing on it must not tip that over the crush line.
+    crush: 46,
     fill: '#8D9097',
     light: '#B3B7BE',
     dark: '#63666D',
