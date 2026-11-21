@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1b1008" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='20' fill='%23f6d365'/%3E%3Ccircle cx='25' cy='30' r='3' fill='%232b1a0e'/%3E%3Cpath d='M32 14l6-10 4 12' fill='%23e0533d'/%3E%3Cpath d='M48 38l12 4-12 6z' fill='%23e8873a'/%3E%3C/svg%3E"
+    />
+    <title>Chicken Fling</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #1b1008;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: none;
+      }
+      #game {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        outline: none;
+      }
+      #loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1b1008;
+        color: #f4e4b2;
+        font-family: ui-rounded, 'Nunito', 'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+        font-size: 20px;
+        letter-spacing: 0.08em;
+        transition: opacity 0.25s ease;
+        pointer-events: none;
+        z-index: 2;
+      }
+      #loading.hidden {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" aria-label="Chicken Fling game canvas"></canvas>
+    <div id="loading">LOADING THE COOP…</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

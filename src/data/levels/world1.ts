@@ -1,0 +1,56 @@
+import type { Level } from '../types';
+import { buildWorld, type LevelSpec } from './build';
+
+const S: LevelSpec[] = [
+  { name: 'First Feathers', t: 'wall', q: ['cluck', 'cluck'] },
+  { name: 'Powder Primer', t: 'tower', q: ['cluck', 'cluck'] },
+  { name: 'Two Birds, One Barn', t: 'multi', q: ['cluck', 'cluck', 'cluck'], en: 2, tier: 1 },
+  { name: 'Egg Drop', t: 'canopy', q: ['cluck', 'speckle'], en: 1, tier: 1 },
+  { name: 'Haystack Hurdle', t: 'gate', q: ['cluck', 'cluck', 'speckle'], mat: 'hay', en: 1 },
+  { name: 'Lean-To', t: 'hut', q: ['cluck', 'speckle', 'cluck'], en: 1, tier: 1 },
+  { name: 'Windmill Wobble', t: 'gate', q: ['cluck', 'speckle', 'cluck'], en: 1, tier: 1 },
+  { name: 'Weasel-back', t: 'tower', q: ['cluck', 'speckle', 'cluck'], en: 2, tier: 1 },
+  { name: 'Crate Expectations', t: 'wall', q: ['cluck', 'cluck', 'speckle'], mat: 'wood', en: 1, tier: 1 },
+  { name: 'The Long Pitch', t: 'tower', q: ['cluck', 'cluck', 'speckle'], en: 1, x: 800 },
+  { name: 'Cape and Cannon', t: 'wall', q: ['drumstick', 'cluck', 'speckle'], mat: 'wood', en: 2, tier: 2 },
+  { name: 'Tunnel Vision', t: 'corridor', q: ['cluck', 'drumstick', 'speckle'], en: 2 },
+  { name: 'Hay Bale Bowling', t: 'bowling', q: ['cluck', 'cluck', 'speckle'], en: 3 },
+  { name: 'Chicken Little', t: 'gate', q: ['cluck', 'speckle', 'drumstick'], tier: 2, en: 2 },
+  { name: 'Double Decker', t: 'hut', q: ['cluck', 'speckle', 'cluck'], tier: 2, en: 2 },
+  { name: 'Swing Low', t: 'bridge', q: ['cluck', 'drumstick', 'speckle'], en: 2 },
+  { name: 'Tight Squeeze', t: 'corridor', q: ['cluck', 'cluck'], en: 2, tier: 1 },
+  { name: 'The Egg Vault', t: 'bunker', q: ['cluck', 'speckle', 'drumstick'], egg: [690, 545], en: 2 },
+  { name: 'Rooftop Run', t: 'hut', q: ['cluck', 'drumstick', 'speckle'], tier: 2, en: 2 },
+  { name: 'Split the Coop', t: 'multi', q: ['cluck', 'cluck', 'speckle'], tier: 2, en: 2 },
+  { name: 'Sky High Hay', t: 'canopy', q: ['cluck', 'speckle', 'drumstick'], tier: 2, en: 2 },
+  { name: 'Reverse Angle', t: 'tower', q: ['cluck', 'speckle', 'drumstick'], en: 2, cannon: [120, 600, 50, 82] },
+  { name: 'Dominoes', t: 'dominos', q: ['cluck', 'cluck', 'speckle'], en: 3 },
+  {
+    name: 'The Long Barn',
+    t: 'multi',
+    q: ['cluck', 'drumstick', 'speckle', 'cluck'],
+    tier: 2,
+    en: 3,
+  },
+  { name: 'Wind Changes', t: 'multi', q: ['cluck', 'cluck', 'speckle', 'drumstick'], en: 2, wind: 170 },
+  { name: 'Scarcity', t: 'tower', q: ['cluck', 'cluck'], en: 2, tier: 1 },
+  { name: 'Tower of Hay', t: 'tower', q: ['cluck', 'cluck', 'speckle'], tier: 3, en: 1 },
+  {
+    name: 'The Gauntlet',
+    t: 'gauntlet',
+    q: ['cluck', 'drumstick', 'speckle', 'cluck', 'speckle'],
+    tier: 2,
+    en: 4,
+  },
+  {
+    name: 'Boss: Big Barn Bill',
+    t: 'fortress',
+    q: ['cluck', 'drumstick', 'speckle', 'cluck', 'speckle'],
+    boss: true,
+    en: 4,
+    tier: 2,
+    et: ['boss', 'helmet', 'grunt', 'brute'],
+  },
+];
+
+export const WORLD1: Level[] = buildWorld(1, S);

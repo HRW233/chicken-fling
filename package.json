@@ -1,0 +1,21 @@
+{
+  "name": "chicken-fling",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chicken Fling — a barn-cannon physics destruction game",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "matter-js": "0.20.0"
+  },
+  "devDependencies": {
+    "@types/matter-js": "0.19.8",
+    "typescript": "5.6.3",
+    "vite": "5.4.10"
+  }
+}
