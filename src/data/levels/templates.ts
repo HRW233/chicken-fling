@@ -93,14 +93,17 @@ const hut: Template = (a) => {
 
 const tower: Template = (a) => {
   const { b, x, gy, mat, tier } = a;
-  const tiers = 2 + tier;
+  const tiers = Math.min(4, 2 + tier);
   const tierH = 50;
   const halfGap = 25 + tier * 3;
+  // Thin legs on a tall stack creep under their own weight; taller towers get
+  // wider legs so they stand until something hits them.
+  const colW = 16 + tier * 4;
   let base = gy;
   for (let i = 0; i < tiers; i++) {
     const colH = tierH - 14;
-    b.box(x - halfGap, base - colH / 2, 16, colH, mat);
-    b.box(x + halfGap, base - colH / 2, 16, colH, mat);
+    b.box(x - halfGap, base - colH / 2, colW, colH, mat);
+    b.box(x + halfGap, base - colH / 2, colW, colH, mat);
     b.box(x, base - tierH + 7, halfGap * 2 + 36, 14, mat);
     base -= tierH;
   }
@@ -286,10 +289,11 @@ const island: Template = (a) => {
 const balloons: Template = (a) => {
   const { b, x, gy, mat } = a;
   const deckY = gy - 214;
-  const deck = b.box(x, deckY, 226, 24, 'wood', { static: true });
-  b.box(x - 62, deckY - 40, 58, 60, mat);
-  b.box(x + 62, deckY - 40, 58, 60, mat);
-  b.box(x, deckY - 84, 150, 22, mat);
+  const deck =   b.box(x, deckY, 226, 24, 'wood', { static: true });
+  // Deck top sits at deckY - 12; load exactly on it so nothing spawns buried.
+  b.box(x - 62, deckY - 42, 58, 60, mat);
+  b.box(x + 62, deckY - 42, 58, 60, mat);
+  b.box(x, deckY - 83, 150, 22, mat);
   b.mech({ kind: 'balloon', x: x - 104, y: deckY - 74, blockId: deck.id, lift: 1 });
   b.mech({ kind: 'balloon', x: x + 104, y: deckY - 74, blockId: deck.id, lift: 1 });
   place(a, [

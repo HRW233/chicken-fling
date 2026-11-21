@@ -1,5 +1,7 @@
 # Chicken Fling
 
+**Play it now: <https://hrw233.github.io/chicken-fling/>** (no install, works on desktop and touch).
+
 A barn-cannon physics game where a flock of very brave chickens is fired at weasel forts. Load a chicken into the cannon, aim and charge, and let momentum do the demolition: wood splinters, glass shatters, hay burns, stone cracks and metal just laughs at you. Every chicken has one single-use ability you can trigger in mid-air, five worlds of weasels stand between you and the Golden Eggs, and each of the 145 levels is scored out of three stars.
 
 Built with Vite, TypeScript (strict) and matter.js. No frameworks, no image/font/audio files, no network calls — all art and sound is drawn and synthesised in code, and progress is stored in `localStorage`.
@@ -89,11 +91,12 @@ Levels are authored as compact specs (template, tier, enemy count/types, materia
 npx --yes tsx scripts/simulate.ts            # all levels, default attempts
 npx --yes tsx scripts/simulate.ts w2 24      # one world, 24 attempts per level
 npx --yes tsx scripts/simulate.ts all 24
+npx --yes tsx scripts/autocheck.ts   # regression: no level may win without a shot
 ```
 
 The harness plays each level with a headless AI that uses the same trajectory model as the preview plus block occlusion, and reports clears, near misses and chicken coverage.
 
-Current status: **145/145 levels validated, 144/145 cleared by the random AI (24 attempts each); the remaining level (`4-09 The Furnace`) was verified solvable with a targeted 2-shot search (48° @ 0.9, then 8° @ 0.8).** All five bosses are beatable.
+Current status: **145/145 levels validate, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The randomised AI clears 134/145 with 48 attempts each; the stragglers are chiefly levels where the AI's coarse 2° grid and five fixed powers never line up a first hit, not levels a player cannot solve. Every world including all five bosses is cleared by the harness.
 
 ## QA summary
 

@@ -56,7 +56,9 @@ const CRUNCH: Record<Material, SoundName> = {
 };
 
 const IMPULSE_SCALE = 0.3;
-const WEASEL_DAMAGE_SCALE = 0.07;
+const WEASEL_DAMAGE_SCALE = 0.03;
+/** Closing speed (px/s) below which a bump doesn't hurt a weasel. */
+const WEASEL_MIN_SPEED = 150;
 /** matter.js 0.20 normalises velocities to a 60 Hz base delta. */
 const PX_PER_STEP = 60;
 
@@ -94,6 +96,13 @@ export class LevelRuntime {
     private readonly fx: Fx,
   ) {
     this.engine = Engine.create();
+    // Settled stacks sleep, so untouched structures don't creep or topple while
+    // the player is aiming. Any impact wakes them again.
+    this.engine.enableSleeping = true;
+    // More solver iterations keep tall stacks stiff: at the default 6/4 a
+    // five-storey tower visibly squashes and leans on its own.
+    this.engine.positionIterations = 20;
+    this.engine.velocityIterations = 12;
     this.engine.gravity.scale = 0.001;
     this.engine.gravity.y = (level.gravity?.y ?? 2200) / 1000;
     this.engine.gravity.x = (level.gravity?.x ?? 0) / 1000;
@@ -928,6 +937,9 @@ export class LevelRuntime {
   }
 
   private handlePair(pair: CollisionPair): void {
+    // Structures settle for a few millimetres on the first frames; that must not
+    // register as impact damage.
+    if (this.time < 0.35) return;
     const refA = getEntity(pair.bodyA);
     const refB = getEntity(pair.bodyB);
     if (!refA && !refB) return;
@@ -943,8 +955,12 @@ export class LevelRuntime {
       return;
     }
 
-    const va = this.prevVel.get(pair.bodyA.id) ?? pair.bodyA.velocity;
-    const vb = this.prevVel.get(pair.bodyB.id) ?? pair.bodyB.velocity;
+    // Static bodies are never sampled for previous velocity (they don't move),
+    // but mechanisms may still leave a velocity on them; ignore it so a lifting
+    // balloon deck can't register as a high-speed impact.
+    const zero = { x: 0, y: 0 };
+    const va = pair.bodyA.isStatic ? zero : (this.prevVel.get(pair.bodyA.id) ?? pair.bodyA.velocity);
+    const vb = pair.bodyB.isStatic ? zero : (this.prevVel.get(pair.bodyB.id) ?? pair.bodyB.velocity);
     const relX = (va.x - vb.x) * PX_PER_STEP;
     const relY = (va.y - vb.y) * PX_PER_STEP;
     const n = pair.collision.normal;
@@ -966,8 +982,8 @@ export class LevelRuntime {
       y: (pair.bodyA.position.y + pair.bodyB.position.y) / 2,
     };
 
-    this.applyImpactDamage(refA, refB, impulse, hit.x, hit.y);
-    this.applyImpactDamage(refB, refA, impulse, hit.x, hit.y);
+    this.applyImpactDamage(refA, refB, impulse, normalSpeed, hit.x, hit.y);
+    this.applyImpactDamage(refB, refA, impulse, normalSpeed, hit.x, hit.y);
 
     if (normalSpeed > 320) {
       this.fx.burst('hitmark', hit.x, hit.y, { count: 4, color: '#FFF4C2' });
@@ -975,7 +991,14 @@ export class LevelRuntime {
     }
   }
 
-  private applyImpactDamage(target: EntityRef | null, other: EntityRef | null, impulse: number, x: number, y: number): void {
+  private applyImpactDamage(
+    target: EntityRef | null,
+    other: EntityRef | null,
+    impulse: number,
+    normalSpeed: number,
+    x: number,
+    y: number,
+  ): void {
     if (!target) return;
     if (target.kind === 'block') {
       const mat = materialDef(target.ent.def.material);
@@ -987,7 +1010,10 @@ export class LevelRuntime {
       }
       if (target.ent.def.material === 'crystal') this.chainCrystal(target.ent, dmg, 0);
     } else if (target.kind === 'weasel') {
-      const dmg = impulse * WEASEL_DAMAGE_SCALE;
+      // Weasel damage keys off closing speed, not impulse: a heavy king resting
+      // on a light beam jitters hard enough to bruise itself otherwise, while a
+      // genuine hit is always fast.
+      const dmg = Math.max(0, normalSpeed - WEASEL_MIN_SPEED) * WEASEL_DAMAGE_SCALE;
       this.damageWeasel(target.ent, dmg);
     } else if (target.kind === 'chicken' && other?.kind === 'weasel') {
       this.fx.burst('feather', x, y, { count: 2, color: target.ent.def.body });

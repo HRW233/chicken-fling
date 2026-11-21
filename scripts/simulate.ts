@@ -100,7 +100,7 @@ function playAttempt(levelIndex: number, seed: number): { cleared: boolean; shot
       const alive = rt.weasels.filter((w) => !w.defeated);
       if (alive.length === 0) break;
       const target = alive[Math.abs(seed + shots * 7) % alive.length];
-      const powers = [0.75, 0.88, 1];
+      const powers = [0.6, 0.7, 0.8, 0.9, 1];
       const power = powers[Math.abs(seed * 3 + shots) % powers.length];
       const offsets = [-3, -1.5, 0, 1.5, 3];
       const jitter = offsets[Math.abs(seed * 7 + shots * 5) % offsets.length];

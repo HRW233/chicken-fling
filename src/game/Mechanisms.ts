@@ -146,6 +146,9 @@ export class MechanismRunner {
         if (!state || state.popped) continue;
         const target = this.hooks.blockById(m.blockId);
         if (!target || target.destroyed) continue;
+        // A static deck can't actually rise; writing a velocity onto it would
+        // only fake a launch into everything resting on it.
+        if (target.body.isStatic) continue;
         const gravity = this.level.gravity?.y ?? 2200;
         Body.setVelocity(target.body, {
           x: target.body.velocity.x,
