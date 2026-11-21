@@ -84,6 +84,8 @@ scripts/solve.ts           greedy solver: aims like a player reading the arc, on
 scripts/probe.ts           dense per-level probe + per-weasel reachability report
 scripts/autocheck.ts       regression: no level may win itself in five idle seconds
 scripts/blasttest.ts       prints egg-bomb damage per weasel type and distance
+scripts/starcheck.ts       reports the shot budget each level allows for 3 stars
+scripts/starcompare.ts     before/after 3-star budget for the retuned fights
 DECISIONS.md               design decisions the brief left open
 ```
 
@@ -99,12 +101,13 @@ npx --yes tsx scripts/solve.ts                # whole campaign (~2 min)
 npx --yes tsx scripts/simulate.ts all 24      # randomised AI, 24 attempts per level
 npx --yes tsx scripts/probe.ts w4-07 20       # reachability + dense probe for levels
 npx --yes tsx scripts/autocheck.ts            # regression: no level may win without a shot
+npx --yes tsx scripts/starcheck.ts            # 3-star shot budget per level
 npx --yes tsx scripts/blasttest.ts            # blast damage per weasel type
 ```
 
 `simulate.ts` fires a randomised AI with a coarse 2° / five-power grid. `solve.ts` is the fairer test: it scores a shortlist of aims by actually playing them out (replaying earlier shots, since physics is deterministic), hill-climbs around the best one, and keeps the winner — the way a player nudges the mouse against the arc preview.
 
-Current status: **145/145 levels validate with zero problems, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The greedy solver clears **145/145**, every boss included. The five it used to end one weasel short on (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-28`) were fixed at the source: the gauntlet's ground weasel no longer spawns inside the bunker (only a 2 px slit above its columns, so it could just be grazed), and the dense gauntlet/boss coops now carry ammo for their health pool instead of one bird per weasel.
+Current status: **145/145 levels validate with zero problems, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The greedy solver clears **145/145**, every boss included, and the six retuned fights (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-26`, `w4-28`) finish with three birds in hand rather than one. They were fixed at the source: the gauntlet's ground weasel no longer spawns inside the bunker (only a 2 px slit above its columns, so it could just be grazed), and the dense gauntlet/boss coops now carry ammo for their health pool instead of one bird per weasel. `scripts/starcheck.ts` confirms every level still allows a 3-star clear — each extra bird adds 8000 of attainable spare-chicken score against only 5760 of extra bar, so the retuned levels' 3-star shot budget is the same or one shot wider than before.
 
 ## QA summary
 

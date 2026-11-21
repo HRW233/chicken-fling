@@ -79,7 +79,7 @@ const S: LevelSpec[] = [
     t: 'gauntlet',
     // Two kings and a brute need more than one hit each; the coop carries a
     // fuller queue so the fight is winnable without perfect aim.
-    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck', 'drumstick', 'bantam', 'drumstick'],
+    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck', 'drumstick', 'bantam', 'drumstick', 'snowbell', 'cluck'],
     mat: 'ice',
     en: 5,
     tier: 2,

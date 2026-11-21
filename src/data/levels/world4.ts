@@ -19,7 +19,7 @@ const S: LevelSpec[] = [
   { name: 'Basalt Column', t: 'tower', q: ['pepper', 'drumstick', 'nugget'], mat: 'stone', en: 2, tier: 3 },
   { name: 'Hot Air', t: 'tower', q: ['pepper', 'drumstick', 'cluck'], en: 2, mech: geyser(760, 3.4) },
   { name: 'Caldera Rim', t: 'island', q: ['pepper', 'drumstick', 'puff'], mat: 'stone', en: 2, mech: lava(1120, 220) },
-  { name: 'Ember Rain', t: 'canopy', q: ['pepper', 'cluck', 'drumstick', 'drumstick', 'pepper', 'drumstick'], mat: 'hay', en: 3, tier: 2 },
+  { name: 'Ember Rain', t: 'canopy', q: ['pepper', 'cluck', 'drumstick', 'drumstick', 'pepper', 'drumstick', 'pepper', 'drumstick'], mat: 'hay', en: 3, tier: 2 },
   { name: 'The Mine Cart', t: 'factory', q: ['pepper', 'drumstick', 'cluck'], en: 2, mat: 'stone' },
   { name: 'Steam Vents', t: 'factory', q: ['pepper', 'puff', 'drumstick'], en: 2, mech: geyser(560, 3.6) },
   { name: 'Obsidian Wall', t: 'bunker', q: ['pepper', 'drumstick', 'cluck', 'nugget'], mat: 'stone', en: 2, tier: 2 },
