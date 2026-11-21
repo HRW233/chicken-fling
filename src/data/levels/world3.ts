@@ -77,7 +77,9 @@ const S: LevelSpec[] = [
   {
     name: 'The Gauntlet: Whiteout',
     t: 'gauntlet',
-    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck'],
+    // Two kings and a brute need more than one hit each; the coop carries a
+    // fuller queue so the fight is winnable without perfect aim.
+    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck', 'drumstick', 'bantam', 'drumstick'],
     mat: 'ice',
     en: 5,
     tier: 2,
@@ -86,7 +88,7 @@ const S: LevelSpec[] = [
   {
     name: 'Boss: Frostbite Floyd',
     t: 'fortress',
-    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck'],
+    q: ['snowbell', 'bantam', 'drumstick', 'puff', 'cluck', 'drumstick', 'bantam', 'snowbell', 'drumstick', 'cluck'],
     boss: true,
     en: 4,
     tier: 2,

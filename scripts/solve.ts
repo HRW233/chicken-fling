@@ -16,6 +16,7 @@ import { NULL_FX } from '../src/game/fx';
 import { ALL_LEVELS } from '../src/data/levels/index';
 import type { ChickenDef } from '../src/data/chickens';
 import type { Level } from '../src/data/types';
+import type { WeaselEnt } from '../src/game/Entities';
 
 const STEP = 1 / 120;
 const DEG = Math.PI / 180;
@@ -28,39 +29,10 @@ interface Shot {
 interface Attempt {
   won: boolean;
   shots: Shot[];
-  bestRemaining: number;
+  survivors: string[];
 }
 
-function replay(level: Level, shots: Shot[], evaluate = false): { rt: LevelRuntime; snapshot: Snapshot } | null {
-  const rt = new LevelRuntime(level, NULL_FX);
-  for (const shot of shots) {
-    const def = rt.loadedDef;
-    if (!def || rt.state !== 'aiming') break;
-    const target = nearestAlive(rt, shot);
-    rt.fire(shot.angle, shot.power);
-    stepShot(rt, def, target);
-  }
-  if (!evaluate) return { rt, snapshot: snapshotOf(rt) };
-  return { rt, snapshot: snapshotOf(rt) };
-}
-
-interface Snapshot {
-  hp: Map<string, number>;
-  defeated: Set<string>;
-  blocks: number;
-  cleared: boolean;
-}
-
-function snapshotOf(rt: LevelRuntime): Snapshot {
-  return {
-    hp: new Map(rt.weasels.map((w) => [w.def.id, w.hp + w.armour])),
-    defeated: new Set(rt.weasels.filter((w) => w.defeated).map((w) => w.def.id)),
-    blocks: rt.blocksDestroyed,
-    cleared: rt.state === 'won',
-  };
-}
-
-function nearestAlive(rt: LevelRuntime, shot: Shot) {
+function nearestAlive(rt: LevelRuntime, shot: Shot): WeaselEnt | null {
   const alive = rt.weasels.filter((w) => !w.defeated);
   if (alive.length === 0) return null;
   const def = rt.loadedDef;
@@ -80,7 +52,7 @@ function nearestAlive(rt: LevelRuntime, shot: Shot) {
   return best;
 }
 
-function stepShot(rt: LevelRuntime, def: ChickenDef, target: { body: { position: { x: number; y: number } } } | null): void {
+function stepShot(rt: LevelRuntime, def: ChickenDef, target: WeaselEnt | null): void {
   let steps = 0;
   let abilityDone = false;
   while ((rt.state as string) === 'flying' && steps < 120 * 9) {
@@ -157,7 +129,13 @@ function candidates(rt: LevelRuntime): Shot[] {
   return out.slice(0, 34);
 }
 
-function evaluate(level: Level, prefix: Shot[], shot: Shot): { score: number; cleared: boolean; remaining: number; won: boolean } {
+interface Scored {
+  shot: Shot;
+  score: number;
+  cleared: boolean;
+}
+
+function evaluate(level: Level, prefix: Shot[], shot: Shot): { score: number; cleared: boolean } {
   const rt = new LevelRuntime(level, NULL_FX);
   for (const s of prefix) {
     const def = rt.loadedDef;
@@ -166,8 +144,9 @@ function evaluate(level: Level, prefix: Shot[], shot: Shot): { score: number; cl
     rt.fire(s.angle, s.power);
     stepShot(rt, def, target);
   }
-  if (rt.state !== 'aiming' || !rt.loadedDef) {
-    return { score: -1, cleared: rt.state === 'won', remaining: rt.weasels.filter((w) => !w.defeated).length, won: rt.state === 'won' };
+  const state = rt.state;
+  if (state !== 'aiming' || !rt.loadedDef) {
+    return { score: -1, cleared: state === 'won' };
   }
   // Damage already banked by the prefix.
   const before = new Map(rt.weasels.map((w) => [w.def.id, (w.defeated ? -100 : 0) + w.hp + w.armour]));
@@ -183,12 +162,18 @@ function evaluate(level: Level, prefix: Shot[], shot: Shot): { score: number; cl
     if (w.defeated && b > -100) score += 14;
   }
   score += rt.blocksDestroyed * 0.05;
-  return {
-    score,
-    cleared: rt.state === 'won',
-    remaining: rt.weasels.filter((x) => !x.defeated).length,
-    won: rt.state === 'won',
-  };
+  return { score, cleared: rt.state === 'won' };
+}
+
+/** Highest-scoring aim from a shortlist; stops early on a clearing shot. */
+function bestOf(level: Level, prefix: Shot[], list: Shot[]): Scored | null {
+  let best: Scored | null = null;
+  for (const shot of list) {
+    const r = evaluate(level, prefix, shot);
+    if (!best || r.score > best.score) best = { shot, ...r };
+    if (r.cleared) return best;
+  }
+  return best;
 }
 
 function minAngle(level: Level): number {
@@ -201,7 +186,7 @@ function maxAngle(level: Level): number {
 
 function solve(level: Level, maxShots = 10): Attempt {
   const shots: Shot[] = [];
-  let bestRemaining = level.weasels.length;
+  let survivors: string[] = level.weasels.map((w) => `${w.type}@${Math.round(w.x)},${Math.round(w.y)}`);
   for (let n = 0; n < maxShots; n++) {
     const probe = new LevelRuntime(level, NULL_FX);
     for (const s of shots) {
@@ -213,42 +198,37 @@ function solve(level: Level, maxShots = 10): Attempt {
     }
     if (probe.state !== 'aiming') {
       const won = probe.state === 'won';
+      survivors = probe.weasels
+        .filter((w) => !w.defeated)
+        .map((w) => `${w.def.type}@${Math.round(w.def.x)},${Math.round(w.def.y)} hp${Math.round(w.hp)}/${w.maxHp}`);
       probe.dispose();
-      return { won, shots, bestRemaining: won ? 0 : bestRemaining };
+      return { won, shots, survivors: won ? [] : survivors };
     }
     const list = candidates(probe);
     probe.dispose();
-    let best: { shot: Shot; score: number; cleared: boolean; remaining: number } | null = null;
-    const tryShot = (shot: Shot): boolean => {
-      const r = evaluate(level, shots, shot);
-      if (!best || r.score > best.score) best = { shot, ...r };
-      return r.cleared;
-    };
-    for (const shot of list) {
-      if (tryShot(shot)) break;
-    }
+    let best = bestOf(level, shots, list);
     // Hill-climb around the best aim: a player nudges the mouse until the arc
     // sits on the weasel, which is how narrow windows get hit.
     if (best && !best.cleared) {
-      const seeds = [best.shot, ...list.slice(0, 2)];
-      for (const seed of seeds) {
+      const nudges: Shot[] = [];
+      for (const seed of [best.shot, ...list.slice(0, 2)]) {
         for (const da of [-1.2, -0.6, 0.6, 1.2]) {
           for (const dp of [-0.04, 0.04]) {
-            const angle = Math.min(maxAngle(level), Math.max(minAngle(level), seed.angle + da * DEG));
-            const power = Math.min(1, Math.max(0.3, seed.power + dp));
-            if (tryShot({ angle, power })) break;
+            nudges.push({
+              angle: Math.min(maxAngle(level), Math.max(minAngle(level), seed.angle + da * DEG)),
+              power: Math.min(1, Math.max(0.3, seed.power + dp)),
+            });
           }
-          if (best?.cleared) break;
         }
-        if (best?.cleared) break;
       }
+      const refined = bestOf(level, shots, nudges);
+      if (refined && refined.score > best.score) best = refined;
     }
     if (!best) break;
     shots.push(best.shot);
-    bestRemaining = Math.min(bestRemaining, best.remaining);
-    if (best.cleared) return { won: true, shots, bestRemaining: 0 };
+    if (best.cleared) return { won: true, shots, survivors: [] };
   }
-  return { won: false, shots, bestRemaining };
+  return { won: false, shots, survivors };
 }
 
 const ids = (process.argv[2] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -262,7 +242,7 @@ for (const level of levels) {
     console.log(`${level.id} ${level.name}: SOLVED in ${r.shots.length} shots (${r.shots.map((s) => `${(s.angle / DEG).toFixed(0)}°/${s.power.toFixed(2)}`).join(' ')}) [${((Date.now() - t0) / 1000).toFixed(1)}s]`);
   } else {
     fails += 1;
-    console.log(`${level.id} ${level.name}: NOT solved — ${r.bestRemaining}/${level.weasels.length} left after ${r.shots.length} shots [${((Date.now() - t0) / 1000).toFixed(1)}s]`);
+    console.log(`${level.id} ${level.name}: NOT solved — ${r.shots.length} shots, left: ${r.survivors.join(' ')} [${((Date.now() - t0) / 1000).toFixed(1)}s]`);
   }
 }
 console.log(`\n${levels.length - fails}/${levels.length} solved in ${((Date.now() - started) / 1000).toFixed(1)}s`);

@@ -407,11 +407,14 @@ const gauntlet: Template = (a) => {
   b.weasel(g1, gy - 106, types[0]);
   b.weasel(x, gy - 150, types[1 % types.length]);
   b.weasel(g3, gy - 154, types[2 % types.length]);
-  b.weasel(g3, gy, types[3 % types.length]);
+  // Ground weasel stands beyond the bunker, not inside it: the bunker's columns
+  // and roof enclose the space under the roof, so a weasel in there could only
+  // be grazed through the 2 px gap above the columns.
+  b.weasel(g3 + 120, gy, types[3 % types.length]);
   // Fifth body stands in the gap between the hay shed and the middle tower;
   // the old spot was inside the tower's base slabs.
   if (a.en >= 5) b.weasel(g1 - 120, gy, types[0]);
-  if (a.en >= 6) b.weasel(g3 + 120, gy, types[1 % types.length]);
+  if (a.en >= 6) b.weasel(g3 + 200, gy, types[1 % types.length]);
 };
 
 const fortress: Template = (a) => {

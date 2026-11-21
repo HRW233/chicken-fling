@@ -38,7 +38,9 @@ const S: LevelSpec[] = [
   {
     name: 'The Gauntlet',
     t: 'gauntlet',
-    q: ['cluck', 'drumstick', 'speckle', 'cluck', 'speckle'],
+    // A king plus a brute eats most of the old coop, so the last level of the
+    // world carries extra birds.
+    q: ['cluck', 'drumstick', 'speckle', 'cluck', 'speckle', 'drumstick', 'speckle', 'drumstick'],
     tier: 2,
     en: 4,
   },

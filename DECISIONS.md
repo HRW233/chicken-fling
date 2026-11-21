@@ -6,6 +6,7 @@ Choices made where the brief was silent or left room for interpretation.
 
 - **Templates + specs instead of 145 hand-written layouts.** Each level is a compact spec (template id, `tier`, `en`, enemy types, material, mechanisms, x offset, seed) expanded by one of 19 parameterised structure templates in `src/data/levels/templates.ts`. This keeps 145 levels consistent, tweakable in one place, and impossible to leave with invalid geometry. Hand-authoring 145 JSON layouts was the brief's suggested format, but the same `Level` shape is produced either way; the specs are the source of truth.
 - **Queue top-up.** Every level's chicken queue is padded to `min(8, weasels + 2)` (bosses: 8). This guarantees at least one spare chicken, which the 3-star rule requires, and keeps every level solvable even after a bad shot.
+- **The dense fights get a longer coop than the top-up gives them.** One bird per weasel assumes one clean hit each, but a king takes four and a boss eight, so the gauntlets and bosses with kings in them (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-26`, `w4-28`) carry explicit queues of 6–10 birds. The greedy solver proves them: it clears all six with a bird or more in hand instead of ending one weasel short.
 - **Star rule exception.** Three stars normally require clearing with an unused chicken; one-chicken levels are exempt (there is no spare to keep).
 - **Procedural-but-seeded.** Each level gets a deterministic seed derived from world and index, so layouts are identical across devices and reloads while still looking varied.
 

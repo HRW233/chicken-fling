@@ -104,7 +104,7 @@ npx --yes tsx scripts/blasttest.ts            # blast damage per weasel type
 
 `simulate.ts` fires a randomised AI with a coarse 2° / five-power grid. `solve.ts` is the fairer test: it scores a shortlist of aims by actually playing them out (replaying earlier shots, since physics is deterministic), hill-climbs around the best one, and keeps the winner — the way a player nudges the mouse against the arc preview.
 
-Current status: **145/145 levels validate with zero problems, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The greedy solver clears **140/145**; the five it misses (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-28`) are large gauntlet/boss fights where it ends with exactly one weasel left after emptying the coop — an ammo/aim limit of the solver, not sealed geometry (a per-weasel sweep finds killable shots for each of them). Every world including all five bosses is cleared.
+Current status: **145/145 levels validate with zero problems, and no level can clear itself — `scripts/autocheck.ts` steps every level for five seconds with no shots and reports 0/145 wins.** The greedy solver clears **145/145**, every boss included. The five it used to end one weasel short on (`w1-28`, `w3-28`, `w3-29`, `w4-13`, `w4-28`) were fixed at the source: the gauntlet's ground weasel no longer spawns inside the bunker (only a 2 px slit above its columns, so it could just be grazed), and the dense gauntlet/boss coops now carry ammo for their health pool instead of one bird per weasel.
 
 ## QA summary
 

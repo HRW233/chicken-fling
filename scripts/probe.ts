@@ -34,6 +34,7 @@ function mulberry(seed: number): () => number {
 interface Shot {
   angle: number;
   power: number;
+  /** Arc clearance to the target; lower is a better aim. */
   score: number;
 }
 
@@ -114,10 +115,9 @@ function candidatesFor(rt: LevelRuntime, tx: number, ty: number): Shot[] {
 
 function pickShot(list: Shot[], rng: () => number, precise: boolean): Shot | null {
   if (list.length === 0) return null;
-  // Precise attempts model a player lining up the on-screen arc: tiny jitter on
-  // the best solution. Exploratory attempts spray wider to find alternatives.
+  // Precise attempts aim the best clear arc, like a player reading the arc
+  // preview; exploratory attempts spray wider to find alternative lanes.
   const span = Math.min(list.length, 16);
-  // Precise = aim the best clear arc, like a player reading the arc preview.
   const idx = precise ? 0 : Math.min(list.length - 1, Math.floor(Math.pow(rng(), 1.6) * span));
   const base = list[idx];
   const jitter = precise ? 0.15 : 2;

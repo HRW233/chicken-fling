@@ -89,7 +89,7 @@ function abilityMoment(def: ChickenDef): 'early' | 'late' {
   }
 }
 
-function playAttempt(levelIndex: number, seed: number): { cleared: boolean; shots: number; remaining: number; near: number } {
+function playAttempt(levelIndex: number, seed: number): { cleared: boolean; shots: number; remaining: number } {
   const level = ALL_LEVELS[levelIndex];
   const rt = new LevelRuntime(level, NULL_FX);
   let shots = 0;
@@ -130,7 +130,7 @@ function playAttempt(levelIndex: number, seed: number): { cleared: boolean; shot
       bestRemaining = Math.min(bestRemaining, remaining);
       if (rt.state !== 'aiming') break;
     }
-    return { cleared: rt.state === 'won', shots, remaining: bestRemaining, near: bestRemaining };
+    return { cleared: rt.state === 'won', shots, remaining: bestRemaining };
   } finally {
     rt.dispose();
   }
